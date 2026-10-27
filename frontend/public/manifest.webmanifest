@@ -1,0 +1,15 @@
+{
+  "name": "Gym · libreta de entrenamiento",
+  "short_name": "Gym",
+  "description": "Rutina por grupo muscular, carga progresiva, descargas y medidas",
+  "lang": "es-AR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F2F0EC",
+  "theme_color": "#F2F0EC",
+  "icons": [
+    { "src": "/icono.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icono-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icono-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable" }
+  ]
+}
