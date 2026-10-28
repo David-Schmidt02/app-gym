@@ -21,9 +21,9 @@ function Enlace({ seccion, className = '' }) {
   );
 }
 
-/** Pie de la barra lateral (solo escritorio): tema y cuenta. En el celular están en Ajustes. */
+/** Pie de la barra lateral (solo escritorio): tema y perfil local. */
 function PieNav() {
-  const { usuario, salir } = useSesion();
+  const { usuario } = useSesion();
   const [tema, setTema] = useTema();
   return (
     <div className="nav__pie">
@@ -36,12 +36,9 @@ function PieNav() {
       </div>
       <div className="nav__cuenta">
         <span className="nav__usuario">
-          <strong>{usuario.nombre}</strong>
-          <span>{usuario.email}</span>
+          <strong>{usuario?.nombre || 'David'}</strong>
+          <span>Libreta local</span>
         </span>
-        <button type="button" className="boton-icono" onClick={salir} aria-label="Cerrar sesión" title="Cerrar sesión">
-          <Icono nombre="salir" tamano={18} />
-        </button>
       </div>
     </div>
   );

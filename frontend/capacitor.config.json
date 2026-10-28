@@ -1,0 +1,8 @@
+{
+  "appId": "ar.com.davidschmidt.gym",
+  "appName": "Gym",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

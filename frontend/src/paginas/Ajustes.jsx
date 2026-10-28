@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Estado from '../componentes/Estado';
 import Icono from '../componentes/Icono';
 import { SelectorOpciones } from '../componentes/Selectores';
@@ -6,6 +6,7 @@ import { useApp, useSesion } from '../estado/contextos';
 import { TEMAS, useTema } from '../estado/tema';
 import { useApi } from '../estado/useApi';
 import { api } from '../lib/api';
+import { exportarRespaldo, restaurarRespaldo } from '../lib/backup';
 import { SEMANAS } from '../lib/formato';
 
 function nombreSemana(n) {
@@ -101,8 +102,103 @@ function GuiaProgresion() {
   );
 }
 
+function RespaldoYPerfil() {
+  const { usuario, actualizarNombre } = useSesion();
+  const { avisar, refrescar } = useApp();
+  const [nombre, setNombre] = useState(usuario?.nombre || 'David');
+  const [guardandoNombre, setGuardandoNombre] = useState(false);
+  const [trabajando, setTrabajando] = useState(false);
+  const archivoInputRef = useRef(null);
+
+  const guardarPerfil = async (e) => {
+    e.preventDefault();
+    if (!nombre.trim()) return;
+    setGuardandoNombre(true);
+    try {
+      await actualizarNombre(nombre.trim());
+      avisar('Nombre actualizado');
+    } catch (err) {
+      avisar(err.message);
+    }
+    setGuardandoNombre(false);
+  };
+
+  const handleExportar = async () => {
+    setTrabajando(true);
+    try {
+      await exportarRespaldo();
+      avisar('Respaldo guardado correctamente');
+    } catch (err) {
+      avisar('Error al exportar: ' + err.message);
+    }
+    setTrabajando(false);
+  };
+
+  const handleImportar = async (e) => {
+    const archivo = e.target.files?.[0];
+    if (!archivo) return;
+    if (!window.confirm('¿Restaurar este respaldo? Reemplazará todos los entrenamientos y medidas actuales por los del archivo.')) {
+      e.target.value = '';
+      return;
+    }
+    setTrabajando(true);
+    try {
+      await restaurarRespaldo(archivo);
+      refrescar();
+      avisar('Respaldo restaurado con éxito');
+    } catch (err) {
+      avisar('Error al importar: ' + err.message);
+    }
+    e.target.value = '';
+    setTrabajando(false);
+  };
+
+  return (
+    <section className="tarjeta">
+      <h2 className="tarjeta__titulo">Respaldo y libreta local</h2>
+      <p className="tenue">
+        Tus rutinas, entrenamientos y medidas se guardan de forma 100 % autónoma en este dispositivo. Podés exportar o restaurar una copia en cualquier momento.
+      </p>
+
+      <form onSubmit={guardarPerfil} className="campo" style={{ marginTop: 'var(--espacio-2)' }}>
+        <span>Tu nombre</span>
+        <div style={{ display: 'flex', gap: 'var(--espacio-2)' }}>
+          <input
+            id="nombre-usuario"
+            type="text"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            disabled={guardandoNombre}
+          />
+          <button type="submit" className="boton boton--chico" disabled={guardandoNombre || nombre === usuario?.nombre}>
+            Guardar
+          </button>
+        </div>
+      </form>
+
+      <div className="botonera" style={{ marginTop: 'var(--espacio-3)' }}>
+        <button type="button" className="boton boton--primario" onClick={handleExportar} disabled={trabajando}>
+          <Icono nombre="descargar" tamano={18} />
+          Exportar respaldo JSON
+        </button>
+
+        <button type="button" className="boton" onClick={() => archivoInputRef.current?.click()} disabled={trabajando}>
+          <Icono nombre="restaurarBackup" tamano={18} />
+          Restaurar respaldo JSON
+        </button>
+        <input
+          ref={archivoInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={handleImportar}
+          style={{ display: 'none' }}
+        />
+      </div>
+    </section>
+  );
+}
+
 export default function Ajustes() {
-  const { usuario, salir } = useSesion();
   const [tema, setTema] = useTema();
 
   return (
@@ -126,17 +222,8 @@ export default function Ajustes() {
           </section>
         </div>
         <div className="pila">
+          <RespaldoYPerfil />
           <GuiaProgresion />
-          <section className="tarjeta solo-celular">
-            <h2 className="tarjeta__titulo">Cuenta</h2>
-            <p>
-              <strong>{usuario.nombre}</strong> <span className="tenue">· {usuario.email}</span>
-            </p>
-            <button type="button" className="boton" onClick={salir}>
-              <Icono nombre="salir" tamano={18} />
-              Cerrar sesión
-            </button>
-          </section>
         </div>
       </div>
     </>

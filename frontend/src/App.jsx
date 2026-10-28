@@ -7,15 +7,13 @@ import Cuerpo from './paginas/Cuerpo';
 import Entrenar from './paginas/Entrenar';
 import Historial from './paginas/Historial';
 import Hoy from './paginas/Hoy';
-import Ingreso from './paginas/Ingreso';
 import Progreso from './paginas/Progreso';
 import Rutina from './paginas/Rutina';
 
 export default function App() {
   const { usuario } = useSesion();
 
-  if (usuario === undefined) return <div className="arranque" aria-busy="true" />;
-  if (usuario === null) return <Ingreso />;
+  if (!usuario) return <div className="arranque" aria-busy="true" />;
 
   return (
     <BrowserRouter>

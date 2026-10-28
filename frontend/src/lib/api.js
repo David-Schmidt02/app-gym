@@ -1,7 +1,9 @@
+import { despacharApi } from '../local/router';
+
 const CLAVE_TOKEN = 'gym.token';
 
 export class ErrorApi extends Error {
-  constructor(mensaje, status) {
+  constructor(mensaje, status = 400) {
     super(mensaje);
     this.status = status;
   }
@@ -10,9 +12,9 @@ export class ErrorApi extends Error {
 export const token = {
   leer: () => {
     try {
-      return localStorage.getItem(CLAVE_TOKEN);
+      return localStorage.getItem(CLAVE_TOKEN) || 'sesion-local';
     } catch {
-      return null;
+      return 'sesion-local';
     }
   },
   guardar: (valor) => {
@@ -33,24 +35,13 @@ export function conParams(ruta, params = {}) {
   return query ? `${ruta}?${query}` : ruta;
 }
 
+/**
+ * Adaptador unificado: resuelve localmente con IndexedDB a través de router.js.
+ */
 export async function api(ruta, { method = 'GET', body } = {}) {
-  const headers = { Accept: 'application/json' };
-  const sesion = token.leer();
-  if (sesion) headers.Authorization = `Bearer ${sesion}`;
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
-
-  let respuesta;
   try {
-    respuesta = await fetch(`/api${ruta}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-  } catch {
-    throw new ErrorApi('Sin conexión con el servidor. Revisá internet y probá de nuevo.', 0);
+    return await despacharApi(ruta, { method, body });
+  } catch (err) {
+    throw new ErrorApi(err.message || 'Error en la libreta local', 400);
   }
-
-  if (respuesta.status === 401 && sesion) window.dispatchEvent(new Event('gym:sesion-vencida'));
-  if (!respuesta.ok) {
-    const datos = await respuesta.json().catch(() => ({}));
-    throw new ErrorApi(typeof datos.detail === 'string' ? datos.detail : 'El servidor respondió con un error', respuesta.status);
-  }
-  return respuesta.status === 204 ? null : respuesta.json();
 }
-
