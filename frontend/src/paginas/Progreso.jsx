@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Estado from '../componentes/Estado';
 import Icono from '../componentes/Icono';
+import IconoMusculo from '../componentes/IconoMusculo';
 import Lineas from '../componentes/Lineas';
+import { SelectorEjercicio } from '../componentes/Selectores';
+import { useEsEscritorio } from '../estado/useAncho';
 import { useApi } from '../estado/useApi';
-import { fechaConDia, fechaCorta, GRUPOS, kg } from '../lib/formato';
+import { fechaConDia, fechaCorta, GRUPOS, kg, nombreGrupo, rangoReps } from '../lib/formato';
 
 const CLAVE = 'gym.progreso';
 const SERIES = [
@@ -20,11 +23,91 @@ function leerElegido() {
   }
 }
 
-function Grafico({ ejercicioId }) {
+function SelectorLateral({ ejercicios, actual, onElegir }) {
+  const [busqueda, setBusqueda] = useState('');
+  const termino = busqueda.trim().toLowerCase();
+  const filtrados = ejercicios.filter((e) => !termino || e.nombre.toLowerCase().includes(termino) || nombreGrupo(e.grupo).toLowerCase().includes(termino));
+
+  return (
+    <aside className="lateral pila">
+      <div className="buscador">
+        <Icono nombre="buscar" tamano={18} className="buscador__icono" />
+        <input
+          type="search"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          placeholder="Buscar ejercicio…"
+          aria-label="Buscar ejercicio"
+        />
+        {busqueda && (
+          <button type="button" className="boton-icono buscador__limpiar" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
+            <Icono nombre="cerrar" tamano={16} />
+          </button>
+        )}
+      </div>
+      <section className="tarjeta tarjeta--llena selector-lateral-tarjeta">
+        {filtrados.length === 0 ? (
+          <p className="tenue">Ningún ejercicio coincide con «{busqueda.trim()}».</p>
+        ) : (
+          <div className="desplazable selector-lateral">
+            {GRUPOS.map((g) => {
+              const delGrupo = filtrados.filter((e) => e.grupo === g.valor);
+              if (!delGrupo.length) return null;
+              return (
+                <div key={g.valor} className="selector-lateral__grupo">
+                  <p className="rotulo">
+                    <IconoMusculo grupo={g.valor} tamano={17} />
+                    {g.nombre}
+                  </p>
+                  <ul className="selector-lateral__lista">
+                    {delGrupo.map((e) => (
+                      <li key={e.id}>
+                        <button
+                          type="button"
+                          className={`selector-lateral__item${e.archivado ? ' es-archivada' : ''}`}
+                          aria-current={e.id === actual ? 'true' : undefined}
+                          onClick={() => onElegir(e.id)}
+                        >
+                          <span className="selector-lateral__nombre">{e.nombre}</span>
+                          <span className="tenue cifra">{rangoReps(e.reps_min, e.reps_max)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    </aside>
+  );
+}
+
+function Grafico({ ejercicioId, esEscritorio }) {
   const { datos, error, reintentar } = useApi(`/ejercicios/${ejercicioId}/progreso`);
+  const ultimo = datos?.puntos.at(-1);
 
   return (
     <Estado datos={datos} error={error} reintentar={reintentar}>
+      {datos && (
+        <header className="tarjeta solo-escritorio-bloque ejercicio-ficha">
+          <div className="tarjeta__cabecera">
+            <div className="ejercicio-ficha__encabezado">
+              <IconoMusculo grupo={datos.ejercicio.grupo} tamano={24} conFondo className="insignia-musculo--grande" />
+              <div>
+                <p className="rotulo">
+                  {nombreGrupo(datos.ejercicio.grupo)} · {datos.ejercicio.tipo === 'compuesto' ? 'Compuesto' : 'Aislado'}
+                </p>
+                <h2 className="tarjeta__titulo tarjeta__titulo--grande">{datos.ejercicio.nombre}</h2>
+              </div>
+            </div>
+            <span className="tenue cifra">
+              {rangoReps(datos.ejercicio.reps_min, datos.ejercicio.reps_max)} reps · +{kg(datos.ejercicio.incremento_kg)} kg
+            </span>
+          </div>
+        </header>
+      )}
       {datos && datos.puntos.length === 0 && (
         <div className="tarjeta vacio">
           <p>Todavía no hay series de este ejercicio.</p>
@@ -32,7 +115,7 @@ function Grafico({ ejercicioId }) {
       )}
       {datos && datos.puntos.length > 0 && (
         <>
-          <section className="cifras">
+          <section className="cifras cifras--progreso">
             <div className="tarjeta cifra-tarjeta">
               <span className="rotulo">
                 <Icono nombre="record" tamano={16} /> Récord de peso
@@ -49,6 +132,17 @@ function Grafico({ ejercicioId }) {
               <strong className="cifra-tarjeta__valor">{kg(datos.record_uno_rm?.uno_rm)} kg</strong>
               <span className="tenue">lo que podrías levantar una vez</span>
             </div>
+            {ultimo && (
+              <div className="tarjeta cifra-tarjeta">
+                <span className="rotulo">Última sesión</span>
+                <strong className="cifra-tarjeta__valor">
+                  {kg(ultimo.peso_kg)} kg <small className="tenue">× {ultimo.reps}</small>
+                </strong>
+                <span className="tenue">
+                  {fechaCorta(ultimo.fecha)} · {datos.puntos.length} {datos.puntos.length === 1 ? 'sesión' : 'sesiones'}
+                </span>
+              </div>
+            )}
           </section>
           <section className="tarjeta">
             <header className="tarjeta__cabecera">
@@ -84,7 +178,7 @@ function Grafico({ ejercicioId }) {
                 descripcion={`Peso de trabajo y 1RM estimado de ${datos.ejercicio.nombre} por sesión, en kg.`}
               />
             )}
-            <details className="tabla-datos">
+            <details className="tabla-datos" open={esEscritorio}>
               <summary>Ver como tabla</summary>
               <table>
                 <thead>
@@ -106,7 +200,7 @@ function Grafico({ ejercicioId }) {
                         {kg(p.peso_kg)} × {p.reps}
                       </td>
                       <td className="cifra">{kg(p.uno_rm)}</td>
-                      <td className="cifra">{kg(p.volumen)}</td>
+                      <td className="cifra">{kg(p.volumen)} kg</td>
                     </tr>
                   ))}
                 </tbody>
@@ -123,6 +217,7 @@ export default function Progreso() {
   const ejercicios = useApi('/ejercicios');
   const ultima = useApi('/sesiones?limite=1');
   const [elegido, setElegido] = useState(leerElegido);
+  const esEscritorio = useEsEscritorio();
 
   const porDefecto = ultima.datos?.[0]?.series[0]?.ejercicio_id ?? ejercicios.datos?.[0]?.id;
   const actual = ejercicios.datos?.some((e) => e.id === elegido) ? elegido : porDefecto;
@@ -147,26 +242,20 @@ export default function Progreso() {
       </header>
       <Estado datos={ejercicios.datos} error={ejercicios.error} reintentar={ejercicios.reintentar}>
         {ejercicios.datos && (
-          <>
-            <label className="campo">
-              <span>Ejercicio</span>
-              <select value={actual ?? ''} onChange={(e) => elegir(Number(e.target.value))}>
-                {GRUPOS.map((g) => (
-                  <optgroup key={g.valor} label={g.nombre}>
-                    {ejercicios.datos
-                      .filter((e) => e.grupo === g.valor)
-                      .map((e) => (
-                        <option key={e.id} value={e.id}>
-                          {e.nombre}
-                          {e.archivado ? ' (archivado)' : ''}
-                        </option>
-                      ))}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-            {actual && <Grafico ejercicioId={actual} />}
-          </>
+          <div className="dos-columnas dos-columnas--invertida pantalla">
+            <SelectorLateral ejercicios={ejercicios.datos} actual={actual} onElegir={elegir} />
+            <div className="pila">
+              <SelectorEjercicio
+                etiqueta="Ejercicio"
+                ejercicios={ejercicios.datos}
+                valor={actual}
+                onElegir={elegir}
+                incluirArchivados
+                className="solo-compacto"
+              />
+              {actual && <Grafico ejercicioId={actual} esEscritorio={esEscritorio} />}
+            </div>
+          </div>
         )}
       </Estado>
     </>

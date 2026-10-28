@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from enum import StrEnum
 
-from sqlalchemy import Enum, ForeignKey, String, func
+from sqlalchemy import Enum, ForeignKey, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -73,6 +73,7 @@ class Plan(Base):
     nombre: Mapped[str] = mapped_column(String(60))
     descripcion: Mapped[str | None] = mapped_column(String(300))
     activo: Mapped[bool] = mapped_column(default=False)
+    descanso_dias: Mapped[int] = mapped_column(default=1)
     dias: Mapped[list["DiaPlan"]] = relationship(
         back_populates="plan", order_by="DiaPlan.orden", cascade="all, delete-orphan"
     )
@@ -85,10 +86,24 @@ class DiaPlan(Base):
     plan_id: Mapped[int] = mapped_column(ForeignKey("planes.id", ondelete="CASCADE"))
     orden: Mapped[int]
     nombre: Mapped[str] = mapped_column(String(40))
+    dia_semana: Mapped[int | None] = mapped_column(default=None)
     plan: Mapped[Plan] = relationship(back_populates="dias")
     ejercicios: Mapped[list["EjercicioDelDia"]] = relationship(
         order_by="EjercicioDelDia.orden", cascade="all, delete-orphan"
     )
+
+
+class AgendaDia(Base):
+    """Excepción semanal de un día de rutina (reprogramado o salteado con fecha=None)."""
+
+    __tablename__ = "agenda_semanal"
+    __table_args__ = (UniqueConstraint("semana", "plan_id", "dia_orden"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    semana: Mapped[date]
+    plan_id: Mapped[int] = mapped_column(ForeignKey("planes.id", ondelete="CASCADE"))
+    dia_orden: Mapped[int]
+    fecha: Mapped[date | None] = mapped_column(default=None)
 
 
 class EjercicioDelDia(Base):

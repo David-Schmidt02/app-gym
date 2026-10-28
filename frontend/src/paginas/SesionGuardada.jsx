@@ -20,6 +20,7 @@ function agrupar(series) {
 function Editor({ sesion, nombres, onListo }) {
   const { avisar, refrescar } = useApp();
   const [fecha, setFecha] = useState(sesion.fecha);
+  const [notas, setNotas] = useState(sesion.notas ?? '');
   const [filas, setFilas] = useState(() => sesion.series.map((s) => ({ ...s, peso: kg(s.peso_kg), repsTexto: String(s.reps) })));
   const [enviando, setEnviando] = useState(false);
 
@@ -38,7 +39,7 @@ function Editor({ sesion, nombres, onListo }) {
     }
     setEnviando(true);
     try {
-      await api(`/sesiones/${sesion.id}`, { method: 'PUT', body: { ...sesion, fecha, series } });
+      await api(`/sesiones/${sesion.id}`, { method: 'PUT', body: { ...sesion, fecha, notas: notas || null, series } });
       refrescar();
       avisar('Cambios guardados');
       onListo();
@@ -50,44 +51,52 @@ function Editor({ sesion, nombres, onListo }) {
 
   return (
     <form className="tarjeta formulario" onSubmit={guardar}>
-      <label className="campo">
-        <span>Fecha</span>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
-      </label>
-      {agrupar(filas).map((grupo) => (
-        <fieldset key={`${grupo.ejercicio_id}-${grupo.series[0].indice}`} className="campo">
-          <legend>{nombres[grupo.ejercicio_id]}</legend>
-          <ol className="series">
-            {grupo.series.map((f, n) => (
-              <li key={f.indice} className={`serie-fila${f.quitada ? ' es-quitada' : ''}`}>
-                <span className="serie-fila__numero" aria-hidden="true">
-                  {n + 1}
-                </span>
-                <label className="serie-fila__campo">
-                  <span className="visualmente-oculto">Peso en kg</span>
-                  <input inputMode="decimal" value={f.peso} onChange={(e) => cambiar(f.indice, { peso: e.target.value })} disabled={f.quitada} />
-                  <span className="serie-fila__unidad">kg</span>
-                </label>
-                <span className="serie-fila__por">×</span>
-                <label className="serie-fila__campo">
-                  <span className="visualmente-oculto">Repeticiones</span>
-                  <input inputMode="numeric" value={f.repsTexto} onChange={(e) => cambiar(f.indice, { repsTexto: e.target.value.replace(/\D/g, '') })} disabled={f.quitada} />
-                  <span className="serie-fila__unidad">reps</span>
-                </label>
-                <button
-                  type="button"
-                  className="boton-icono"
-                  onClick={() => cambiar(f.indice, { quitada: !f.quitada })}
-                  aria-label={f.quitada ? 'Volver a incluir la serie' : 'Quitar la serie'}
-                >
-                  <Icono nombre={f.quitada ? 'restaurar' : 'borrar'} tamano={18} />
-                </button>
-              </li>
-            ))}
-          </ol>
-        </fieldset>
-      ))}
-      <div className="botonera">
+      <div className="campos-en-fila campos-en-fila--responsivo">
+        <label className="campo">
+          <span>Fecha</span>
+          <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+        </label>
+        <label className="campo">
+          <span>Notas</span>
+          <input value={notas} onChange={(e) => setNotas(e.target.value)} maxLength={500} placeholder="Notas de la sesión…" />
+        </label>
+      </div>
+      <div className="editor-dias-grilla">
+        {agrupar(filas).map((grupo) => (
+          <fieldset key={`${grupo.ejercicio_id}-${grupo.series[0].indice}`} className="editor-dia">
+            <legend className="rutina-dias__nombre">{nombres[grupo.ejercicio_id]}</legend>
+            <ol className="series">
+              {grupo.series.map((f, n) => (
+                <li key={f.indice} className={`serie-fila${f.quitada ? ' es-quitada' : ''}`}>
+                  <span className="serie-fila__numero" aria-hidden="true">
+                    {n + 1}
+                  </span>
+                  <label className="serie-fila__campo">
+                    <span className="visualmente-oculto">Peso en kg</span>
+                    <input inputMode="decimal" value={f.peso} onChange={(e) => cambiar(f.indice, { peso: e.target.value })} disabled={f.quitada} />
+                    <span className="serie-fila__unidad">kg</span>
+                  </label>
+                  <span className="serie-fila__por">×</span>
+                  <label className="serie-fila__campo">
+                    <span className="visualmente-oculto">Repeticiones</span>
+                    <input inputMode="numeric" value={f.repsTexto} onChange={(e) => cambiar(f.indice, { repsTexto: e.target.value.replace(/\D/g, '') })} disabled={f.quitada} />
+                    <span className="serie-fila__unidad">reps</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="boton-icono"
+                    onClick={() => cambiar(f.indice, { quitada: !f.quitada })}
+                    aria-label={f.quitada ? 'Volver a incluir la serie' : 'Quitar la serie'}
+                  >
+                    <Icono nombre={f.quitada ? 'restaurar' : 'borrar'} tamano={18} />
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </fieldset>
+        ))}
+      </div>
+      <div className="acciones">
         <button type="button" className="boton" onClick={onListo}>
           Cancelar
         </button>
@@ -99,19 +108,20 @@ function Editor({ sesion, nombres, onListo }) {
   );
 }
 
-export default function SesionGuardada() {
-  const { id } = useParams();
+/** Detalle y editor de una sesión guardada; reutilizable como página o en el panel derecho de Historial. */
+export function DetalleSesion({ sesionId, nombres: nombresProp, embebido = false }) {
   const navegar = useNavigate();
   const { avisar, refrescar } = useApp();
-  const { datos: sesion, error, reintentar } = useApi(`/sesiones/${id}`);
-  const ejercicios = useApi('/ejercicios');
+  const { datos: sesion, error, reintentar } = useApi(sesionId ? `/sesiones/${sesionId}` : null);
+  const ejercicios = useApi(nombresProp ? null : '/ejercicios');
   const [editando, setEditando] = useState(false);
   const [borrando, setBorrando] = useState(false);
-  const nombres = Object.fromEntries((ejercicios.datos ?? []).map((e) => [e.id, e.nombre]));
+
+  const nombres = nombresProp ?? Object.fromEntries((ejercicios.datos ?? []).map((e) => [e.id, e.nombre]));
 
   const borrar = async () => {
     try {
-      await api(`/sesiones/${id}`, { method: 'DELETE' });
+      await api(`/sesiones/${sesionId}`, { method: 'DELETE' });
       refrescar();
       avisar('Entrenamiento borrado');
       navegar('/historial', { replace: true });
@@ -120,41 +130,89 @@ export default function SesionGuardada() {
     }
   };
 
+  if (!sesionId) {
+    return (
+      <div className="tarjeta vacio">
+        <p>Elegí un entrenamiento de la lista para ver sus series.</p>
+      </div>
+    );
+  }
+
+  const grupos = sesion ? agrupar(sesion.series) : [];
+  const volumen = sesion ? sesion.series.reduce((suma, s) => suma + s.peso_kg * s.reps, 0) : 0;
+
   return (
-    <>
-      <header className="cabecera">
-        <Link to="/historial" className="boton-icono" aria-label="Volver al historial">
-          <Icono nombre="anterior" />
-        </Link>
-        <div className="cabecera__centro">
-          <h1 className="cabecera__titulo">{sesion?.dia_nombre ?? 'Entrenamiento'}</h1>
-          {sesion && <p className="tenue">{fechaLarga(sesion.fecha)}</p>}
-        </div>
-        {sesion && <span className={`pastilla pastilla--${sesion.tipo_semana}`}>{SEMANAS[sesion.tipo_semana].nombre}</span>}
-      </header>
-      <Estado datos={sesion && ejercicios.datos ? sesion : null} error={error} reintentar={reintentar}>
-        {sesion && editando && <Editor sesion={sesion} nombres={nombres} onListo={() => setEditando(false)} />}
-        {sesion && !editando && (
-          <>
-            <section className="tarjeta">
-              <ul className="renglones">
-                {agrupar(sesion.series).map((grupo) => (
-                  <li key={`${grupo.ejercicio_id}-${grupo.series[0].indice}`} className="renglon renglon--alto">
-                    <span className="renglon__texto">
-                      <span className="renglon__titulo">{nombres[grupo.ejercicio_id]}</span>
-                      <span className="series-hechas">
-                        {grupo.series.map((s) => (
-                          <span key={s.indice} className="cifra">
-                            {kg(s.peso_kg)} × {s.reps}
-                          </span>
-                        ))}
-                      </span>
-                    </span>
-                  </li>
+    <Estado datos={sesion && (nombresProp || ejercicios.datos) ? sesion : null} error={error} reintentar={reintentar}>
+      {sesion && embebido && (
+        <section className="tarjeta">
+          <header className="tarjeta__cabecera">
+            <div>
+              <p className="rotulo">{fechaLarga(sesion.fecha)}</p>
+              <h2 className="tarjeta__titulo tarjeta__titulo--grande">{sesion.dia_nombre}</h2>
+            </div>
+            <div className="botonera">
+              <span className={`pastilla pastilla--${sesion.tipo_semana}`}>{SEMANAS[sesion.tipo_semana].nombre}</span>
+              {!editando && (
+                <button type="button" className="boton boton--chico" onClick={() => setEditando(true)}>
+                  <Icono nombre="editar" tamano={16} />
+                  Corregir
+                </button>
+              )}
+              {!editando &&
+                (borrando ? (
+                  <>
+                    <button type="button" className="boton boton--chico boton--peligro" onClick={borrar}>
+                      Sí, borrar
+                    </button>
+                    <button type="button" className="boton boton--chico" onClick={() => setBorrando(false)}>
+                      No
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" className="boton boton--chico boton--peligro" onClick={() => setBorrando(true)}>
+                    <Icono nombre="borrar" tamano={16} />
+                    Borrar
+                  </button>
                 ))}
-              </ul>
-              {sesion.notas && <p className="ejercicio__notas">{sesion.notas}</p>}
-            </section>
+            </div>
+          </header>
+          <dl className="resumen-sesion__datos resumen-sesion__datos--borde">
+            <div>
+              <dt>Ejercicios</dt>
+              <dd className="cifra">{grupos.length}</dd>
+            </div>
+            <div>
+              <dt>Series totales</dt>
+              <dd className="cifra">{sesion.series.length}</dd>
+            </div>
+            <div>
+              <dt>Volumen movido</dt>
+              <dd className="cifra">{kg(volumen)} kg</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+      {sesion && editando && <Editor sesion={sesion} nombres={nombres} onListo={() => setEditando(false)} />}
+      {sesion && !editando && (
+        <>
+          <section className={`tarjeta${embebido ? ' tarjeta--llena' : ''}`}>
+            <div className={`sesion-ejercicios-grilla${embebido ? ' desplazable' : ''}`}>
+              {grupos.map((grupo) => (
+                <div key={`${grupo.ejercicio_id}-${grupo.series[0].indice}`} className="sesion-ejercicio">
+                  <span className="renglon__titulo">{nombres[grupo.ejercicio_id]}</span>
+                  <span className="series-hechas">
+                    {grupo.series.map((s) => (
+                      <span key={s.indice} className="cifra">
+                        {kg(s.peso_kg)} × {s.reps}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {sesion.notas && <p className="ejercicio__notas">{sesion.notas}</p>}
+          </section>
+          {!embebido && (
             <div className="botonera">
               <button type="button" className="boton" onClick={() => setEditando(true)}>
                 <Icono nombre="editar" tamano={18} />
@@ -176,9 +234,30 @@ export default function SesionGuardada() {
                 </button>
               )}
             </div>
-          </>
-        )}
-      </Estado>
+          )}
+        </>
+      )}
+    </Estado>
+  );
+}
+
+export default function SesionGuardada() {
+  const { id } = useParams();
+  const { datos: sesion } = useApi(`/sesiones/${id}`);
+
+  return (
+    <>
+      <header className="cabecera">
+        <Link to="/historial" className="boton-icono" aria-label="Volver al historial">
+          <Icono nombre="anterior" />
+        </Link>
+        <div className="cabecera__centro">
+          <h1 className="cabecera__titulo">{sesion?.dia_nombre ?? 'Entrenamiento'}</h1>
+          {sesion && <p className="tenue">{fechaLarga(sesion.fecha)}</p>}
+        </div>
+        {sesion && <span className={`pastilla pastilla--${sesion.tipo_semana}`}>{SEMANAS[sesion.tipo_semana].nombre}</span>}
+      </header>
+      <DetalleSesion key={id} sesionId={id} />
     </>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import Icono from './Icono';
 
 /** Panel modal: hoja que sube desde abajo en el celular, diálogo centrado en pantallas grandes. */
-export default function Hoja({ titulo, abierta, onCerrar, children }) {
+export default function Hoja({ titulo, abierta, onCerrar, ancha = false, children }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export default function Hoja({ titulo, abierta, onCerrar, children }) {
   return (
     <dialog
       ref={ref}
-      className="hoja"
+      className={`hoja${ancha ? ' hoja--ancha' : ''}`}
       onClose={onCerrar}
       onClick={(e) => e.target === ref.current && onCerrar()}
       aria-label={titulo}

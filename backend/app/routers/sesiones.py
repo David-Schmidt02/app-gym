@@ -6,6 +6,7 @@ from app.dependencies import DbDep
 from app.schemas.hoy import HoyOut
 from app.schemas.planes import PlanOut
 from app.schemas.sesiones import EntrenamientoOut, SesionIn, SesionOut
+from app.services.agenda_service import AgendaService
 from app.services.sesion_service import SesionService
 
 router = APIRouter(tags=["Entrenamientos"])
@@ -14,12 +15,18 @@ router = APIRouter(tags=["Entrenamientos"])
 @router.get("/hoy", response_model=HoyOut)
 def hoy(db: DbDep) -> HoyOut:
     servicio = SesionService(db)
+    agenda = AgendaService(db)
     plan = servicio.planes.activo()
+    semana = agenda.semana_actual(plan) if plan and plan.dias else None
+    sugerido: int | None = None
+    if plan and plan.dias and semana is not None:
+        sugerido = agenda.dia_sugerido(plan, semana, servicio.dia_sugerido(plan))
     return HoyOut(
         ciclo=servicio.ciclo.estado(),
         plan=PlanOut.model_validate(plan) if plan else None,
-        dia_sugerido=servicio.dia_sugerido(plan) if plan and plan.dias else None,
+        dia_sugerido=sugerido,
         sesiones_semana=servicio.de_la_semana(),
+        semana=semana,
     )
 
 

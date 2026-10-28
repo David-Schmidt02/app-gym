@@ -1,8 +1,8 @@
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import NoEncontrado, ReglaDeNegocio
-from app.models import DiaPlan, Ejercicio, EjercicioDelDia, Plan
+from app.models import AgendaDia, DiaPlan, Ejercicio, EjercicioDelDia, Plan
 from app.schemas.planes import PlanIn
 
 
@@ -33,6 +33,7 @@ class PlanService:
         """Los entrenamientos ya hechos no cambian: guardan el nombre del día y sus series."""
         plan = self.obtener(plan_id)
         plan.dias.clear()
+        self.db.execute(delete(AgendaDia).where(AgendaDia.plan_id == plan.id))
         self.db.flush()
         self._volcar(plan, datos)
         self.db.commit()
@@ -59,10 +60,12 @@ class PlanService:
             raise NoEncontrado(f"No existen los ejercicios {sorted(faltan)}")
         plan.nombre = datos.nombre.strip()
         plan.descripcion = (datos.descripcion or "").strip() or None
+        plan.descanso_dias = datos.descanso_dias
         plan.dias = [
             DiaPlan(
                 orden=i,
                 nombre=dia.nombre.strip(),
+                dia_semana=dia.dia_semana,
                 ejercicios=[
                     EjercicioDelDia(ejercicio_id=e.ejercicio_id, orden=j, series=e.series)
                     for j, e in enumerate(dia.ejercicios)

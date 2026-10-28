@@ -10,7 +10,6 @@ import Hoy from './paginas/Hoy';
 import Ingreso from './paginas/Ingreso';
 import Progreso from './paginas/Progreso';
 import Rutina from './paginas/Rutina';
-import SesionGuardada from './paginas/SesionGuardada';
 
 export default function App() {
   const { usuario } = useSesion();
@@ -27,7 +26,7 @@ export default function App() {
             <Route path="entrenar" element={<Entrenar />} />
             <Route path="entrenar/:dia" element={<Entrenar />} />
             <Route path="historial" element={<Historial />} />
-            <Route path="historial/:id" element={<SesionGuardada />} />
+            <Route path="historial/:id" element={<Historial />} />
             <Route path="progreso" element={<Progreso />} />
             <Route path="cuerpo" element={<Cuerpo />} />
             <Route path="rutina" element={<Rutina />} />

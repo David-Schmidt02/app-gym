@@ -15,6 +15,29 @@ export const GRUPOS = [
   { valor: 'core', nombre: 'Core' },
 ];
 
+export const DIAS_SEMANA = [
+  { valor: 0, corto: 'Lun', inicial: 'L', nombre: 'Lunes' },
+  { valor: 1, corto: 'Mar', inicial: 'M', nombre: 'Martes' },
+  { valor: 2, corto: 'Mié', inicial: 'X', nombre: 'Miércoles' },
+  { valor: 3, corto: 'Jue', inicial: 'J', nombre: 'Jueves' },
+  { valor: 4, corto: 'Vie', inicial: 'V', nombre: 'Viernes' },
+  { valor: 5, corto: 'Sáb', inicial: 'S', nombre: 'Sábado' },
+  { valor: 6, corto: 'Dom', inicial: 'D', nombre: 'Domingo' },
+];
+
+export const DIAS_POR_CANTIDAD = {
+  1: [2],
+  2: [1, 4],
+  3: [0, 2, 4],
+  4: [0, 1, 3, 4],
+  5: [0, 1, 2, 4, 5],
+  6: [0, 1, 2, 3, 4, 5],
+  7: [0, 1, 2, 3, 4, 5, 6],
+};
+
+export const diaSemanaCorto = (n) => DIAS_SEMANA[n]?.corto ?? '';
+export const diaSemanaNombre = (n) => DIAS_SEMANA[n]?.nombre ?? '';
+
 export const nombreGrupo = (valor) => GRUPOS.find((g) => g.valor === valor)?.nombre ?? valor;
 
 export const SEMANAS = {

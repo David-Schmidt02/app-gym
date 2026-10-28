@@ -1,20 +1,21 @@
 # Gym
 
-> **Versión** 1.0.0 · **Última actualización** 2026-10-26
+> **Versión** 1.1.0 · **Última actualización** 2026-10-28
 
 Libreta de gimnasio personal: rutina por grupo muscular, registro rápido de pesos y repeticiones, carga progresiva automática, semanas de descarga, y peso corporal y medidas.
 
 | Versión | Fecha | Cambios |
 |---|---|---|
+| 1.1.0 | 2026-10-28 | Diseño horizontal de dos columnas en escritorio, selectores desplegables propios, iconografía anatómica por grupo muscular y agenda semanal fija con descanso configurable y postergación inteligente en cascada. |
 | 1.0.0 | 2026-10-26 | Primera versión: banco de ejercicios por grupo muscular, rutinas de 2, 3 y 4 días, entrenamiento con «la vez pasada» y sugerencia de peso (doble progresión), ciclo de adaptación + bloques de 4 semanas de progresión y 1 de descarga, descanso entre series, historial editable, curva de progreso por ejercicio, y peso corporal y medidas. |
 
 ## Qué hace
 
-- **Hoy**: la semana del ciclo (adaptación, progresión 1 a 4 o descarga) y cuántos entrenamientos llevás en la semana; el día de la rutina que toca (el que sigue al último que hiciste) con sus ejercicios y el botón Empezar; los últimos entrenamientos.
+- **Hoy**: la semana del ciclo (adaptación, progresión 1 a 4 o descarga), el calendario semanal con la rutina asignada por día (permite postergar a mañana o mover días con reprogramación en cascada respetando los descansos), el entrenamiento que toca hoy (o aviso de día de descanso) con el botón Empezar, y los últimos entrenamientos.
 - **Entrenar** (botón del centro): cada ejercicio muestra lo que hiciste la vez pasada y la sugerencia de hoy con su motivo. Las series ya vienen con el peso sugerido; anotás las reps y marcás la serie, y arranca el descanso (2 min en compuestos, 1:15 en aislados, +15 s a mano). Lo anotado queda guardado en el teléfono, un borrador por día de la rutina, hasta tocar «Terminar».
 - **Progreso**: por ejercicio, el récord de peso, el 1RM estimado (Epley) y la curva de peso de trabajo y 1RM por sesión (las descargas, huecas). El historial completo se corrige o se borra desde ahí.
 - **Cuerpo**: peso, cintura, cadera, pecho, brazo y muslo. Cada anotación lleva lo que se midió ese día; muestra el último valor, la diferencia con el anterior y con el primero, y la curva.
-- **Rutina**: las rutinas (una activa) con su editor de días, ejercicios y series; y el banco de ejercicios (hasta unos 5 por grupo) con su rango de reps y cuántos kg subir.
+- **Rutina**: las rutinas (una activa) con su editor de días, día de la semana asignado, descanso mínimo entre sesiones, ejercicios y series; y el banco de ejercicios (hasta unos 5 por grupo) con su rango de reps y cuántos kg subir.
 - **Ajustes**: en qué semana del ciclo estás (para retomar, adelantar o repetir una descarga), tema y cuenta.
 
 Una sola cuenta: el registro se cierra al crearla (`MAX_USUARIOS`).
@@ -45,7 +46,7 @@ Los pesos sugeridos se redondean hacia abajo al medio kilo.
 | Frontend | React 19 + Vite, CSS propio, instalable como app (manifest) |
 | Deploy | Railway, un servicio con `Dockerfile` en la raíz y un volumen para la base |
 
-Mismo esqueleto que [app-ahorro](https://github.com/David-Schmidt02/app-ahorro). No hay migraciones: las tablas se crean al iniciar (`Base.metadata.create_all`). Si cambia el modelo hay que adaptar la base a mano o empezar una nueva.
+Mismo esqueleto que [app-ahorro](https://github.com/David-Schmidt02/app-ahorro). Las tablas se crean e hidratan de forma idempotente al iniciar (`Base.metadata.create_all` + `migrar_esquema`).
 
 ## Desarrollo local
 

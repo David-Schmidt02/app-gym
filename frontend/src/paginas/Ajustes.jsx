@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Estado from '../componentes/Estado';
 import Icono from '../componentes/Icono';
+import { SelectorOpciones } from '../componentes/Selectores';
 import { useApp, useSesion } from '../estado/contextos';
 import { TEMAS, useTema } from '../estado/tema';
 import { useApi } from '../estado/useApi';
@@ -40,16 +41,16 @@ function Ciclo() {
       <Estado datos={datos} error={error} reintentar={reintentar}>
         {datos && (
           <>
-            <label className="campo">
-              <span>Esta semana es la</span>
-              <select value={datos.semana} onChange={(e) => fijar(Number(e.target.value))} disabled={enviando}>
-                {Array.from({ length: Math.max(datos.semana + 11, 16) }, (_, n) => (
-                  <option key={n} value={n}>
-                    {nombreSemana(n)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <SelectorOpciones
+              etiqueta="Esta semana es la"
+              opciones={Array.from({ length: Math.max(datos.semana + 11, 16) }, (_, n) => ({
+                valor: n,
+                nombre: nombreSemana(n),
+              }))}
+              valor={datos.semana}
+              onCambio={fijar}
+              disabled={enviando}
+            />
             <p className="tenue">{SEMANAS[datos.tipo].detalle}</p>
             <div className="botonera">
               <button type="button" className="boton boton--chico" onClick={() => fijar(1)} disabled={enviando}>
@@ -66,6 +67,40 @@ function Ciclo() {
   );
 }
 
+function GuiaProgresion() {
+  return (
+    <section className="tarjeta">
+      <h2 className="tarjeta__titulo">Cómo decide el peso sugerido</h2>
+      <ul className="renglones guia-lista">
+        <li className="renglon renglon--alto">
+          <span className="renglon__texto">
+            <span className="renglon__titulo">Doble progresión</span>
+            <span className="renglon__detalle">
+              Mantenés el peso hasta alcanzar el tope de reps en todas las series; recién ahí subís el incremento del ejercicio y volvés al piso del rango.
+            </span>
+          </span>
+        </li>
+        <li className="renglon renglon--alto">
+          <span className="renglon__texto">
+            <span className="renglon__titulo">Estancamiento</span>
+            <span className="renglon__detalle">
+              Si dos sesiones seguidas con el mismo peso suman menos repeticiones totales, sugiere bajar un 10 % para retomar impulso.
+            </span>
+          </span>
+        </li>
+        <li className="renglon renglon--alto">
+          <span className="renglon__texto">
+            <span className="renglon__titulo">Semana de descarga</span>
+            <span className="renglon__detalle">
+              La 5.ª semana de cada bloque reduce las series a la mitad y el peso un 15 %. Esas sesiones no alteran la progresión del siguiente bloque.
+            </span>
+          </span>
+        </li>
+      </ul>
+    </section>
+  );
+}
+
 export default function Ajustes() {
   const { usuario, salir } = useSesion();
   const [tema, setTema] = useTema();
@@ -75,28 +110,35 @@ export default function Ajustes() {
       <header className="cabecera">
         <h1 className="cabecera__titulo">Ajustes</h1>
       </header>
-      <Ciclo />
-      <section className="tarjeta solo-celular">
-        <h2 className="tarjeta__titulo">Tema</h2>
-        <div className="segmentado" role="group" aria-label="Tema">
-          {TEMAS.map((t) => (
-            <button key={t.valor} type="button" aria-pressed={tema === t.valor} onClick={() => setTema(t.valor)}>
-              <Icono nombre={t.icono} tamano={18} />
-              {t.nombre}
-            </button>
-          ))}
+      <div className="dos-columnas dos-columnas--parejas">
+        <div className="pila">
+          <Ciclo />
+          <section className="tarjeta solo-celular">
+            <h2 className="tarjeta__titulo">Tema</h2>
+            <div className="segmentado" role="group" aria-label="Tema">
+              {TEMAS.map((t) => (
+                <button key={t.valor} type="button" aria-pressed={tema === t.valor} onClick={() => setTema(t.valor)}>
+                  <Icono nombre={t.icono} tamano={18} />
+                  {t.nombre}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
-      <section className="tarjeta solo-celular">
-        <h2 className="tarjeta__titulo">Cuenta</h2>
-        <p>
-          <strong>{usuario.nombre}</strong> <span className="tenue">· {usuario.email}</span>
-        </p>
-        <button type="button" className="boton" onClick={salir}>
-          <Icono nombre="salir" tamano={18} />
-          Cerrar sesión
-        </button>
-      </section>
+        <div className="pila">
+          <GuiaProgresion />
+          <section className="tarjeta solo-celular">
+            <h2 className="tarjeta__titulo">Cuenta</h2>
+            <p>
+              <strong>{usuario.nombre}</strong> <span className="tenue">· {usuario.email}</span>
+            </p>
+            <button type="button" className="boton" onClick={salir}>
+              <Icono nombre="salir" tamano={18} />
+              Cerrar sesión
+            </button>
+          </section>
+        </div>
+      </div>
     </>
   );
 }

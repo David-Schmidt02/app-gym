@@ -9,9 +9,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import SECRET_KEY_DESARROLLO, get_settings
 from app.core.exception_handlers import registrar_handlers
-from app.database import Base, SessionLocal, engine
+from app.database import Base, SessionLocal, engine, migrar_esquema
 from app.dependencies import usuario_actual
-from app.routers import auth, ciclo, ejercicios, mediciones, planes, sesiones
+from app.routers import agenda, auth, ciclo, ejercicios, mediciones, planes, sesiones
 from app.services.semillas import sembrar
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -23,6 +23,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     if get_settings().secret_key == SECRET_KEY_DESARROLLO:
         logger.warning("SECRET_KEY no está definida: se usa la de desarrollo (no apta para producción)")
     Base.metadata.create_all(engine)
+    migrar_esquema(engine)
     with SessionLocal() as db:
         sembrar(db)
     yield
@@ -35,7 +36,7 @@ def crear_app() -> FastAPI:
     api = APIRouter(prefix="/api")
     api.include_router(auth.router)
     privadas = APIRouter(dependencies=[Depends(usuario_actual)])
-    for modulo in (ejercicios, planes, sesiones, ciclo, mediciones):
+    for modulo in (ejercicios, planes, sesiones, ciclo, mediciones, agenda):
         privadas.include_router(modulo.router)
     api.include_router(privadas)
     app.include_router(api)

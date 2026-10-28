@@ -2,6 +2,7 @@
 from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
+from app.database import DIAS_POR_CANTIDAD
 from app.models import DiaPlan, Ejercicio, EjercicioDelDia, Grupo, Plan, TipoEjercicio
 
 C, A = TipoEjercicio.COMPUESTO, TipoEjercicio.AISLADO
@@ -124,15 +125,18 @@ def sembrar(db: Session) -> None:
             )
     db.add_all(por_nombre.values())
     for nombre, descripcion, activo, dias in PLANES:
+        sugeridos = DIAS_POR_CANTIDAD[len(dias)]
         db.add(
             Plan(
                 nombre=nombre,
                 descripcion=descripcion,
                 activo=activo,
+                descanso_dias=1,
                 dias=[
                     DiaPlan(
                         orden=i,
                         nombre=nombre_dia,
+                        dia_semana=sugeridos[i],
                         ejercicios=[
                             EjercicioDelDia(ejercicio=por_nombre[ejercicio], orden=j, series=series)
                             for j, (ejercicio, series) in enumerate(ejercicios)

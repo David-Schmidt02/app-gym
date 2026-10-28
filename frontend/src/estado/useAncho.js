@@ -15,3 +15,17 @@ export function useAncho(inicial = 320) {
 
   return [ref, ancho];
 }
+
+/** Sigue una media query de CSS (ej. para vistas maestro-detalle en escritorio). */
+export function useEsEscritorio(consulta = '(min-width: 1100px)') {
+  const [coincide, setCoincide] = useState(() => window.matchMedia(consulta).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(consulta);
+    const actualizar = (e) => setCoincide(e.matches);
+    media.addEventListener('change', actualizar);
+    return () => media.removeEventListener('change', actualizar);
+  }, [consulta]);
+
+  return coincide;
+}

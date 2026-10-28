@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from app.database import Base, engine  # noqa: E402
 from app.main import app  # noqa: E402
-from app.services import ciclo_service, sesion_service  # noqa: E402
+from app.services import agenda_service, ciclo_service, sesion_service  # noqa: E402
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def hoy(monkeypatch):
     """Fija la fecha de hoy: `hoy(date(2026, 11, 2))`. Por defecto, un lunes."""
 
     def fijar(dia: date) -> None:
-        for modulo in (ciclo_service, sesion_service):
+        for modulo in (agenda_service, ciclo_service, sesion_service):
             monkeypatch.setattr(modulo, "hoy", lambda: dia)
 
     fijar(date(2026, 11, 2))

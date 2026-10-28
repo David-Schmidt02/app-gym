@@ -102,6 +102,36 @@ function FormMedicion({ medicion, onListo }) {
   );
 }
 
+function ResumenMedidas({ medidas, elegida, mediciones, onElegir }) {
+  if (medidas.length <= 1) return null;
+  return (
+    <div className="medidas-resumen" role="group" aria-label="Medida">
+      {medidas.map((m) => {
+        const puntos = mediciones.filter((d) => d[m.clave] !== null);
+        const ultima = puntos.at(-1);
+        const anterior = puntos.at(-2);
+        return (
+          <button
+            key={m.clave}
+            type="button"
+            className="medida-ficha"
+            aria-pressed={m.clave === elegida.clave}
+            onClick={() => onElegir(m.clave)}
+          >
+            <span className="rotulo">{m.nombre}</span>
+            <strong className="medida-ficha__valor cifra">
+              {ultima ? `${kg(ultima[m.clave])} ${m.unidad}` : '—'}
+            </strong>
+            <span className="tenue cifra">
+              {ultima && anterior ? `${conSigno(ultima[m.clave] - anterior[m.clave])} ${m.unidad}` : ultima ? fechaCorta(ultima.fecha) : 'Sin datos'}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Medida({ medida, mediciones }) {
   const puntos = mediciones.filter((m) => m[medida.clave] !== null);
   if (!puntos.length) return <p className="tenue">Todavía no anotaste {medida.nombre.toLowerCase()}.</p>;
@@ -125,14 +155,16 @@ function Medida({ medida, mediciones }) {
           </span>
         )}
       </div>
-      {puntos.length >= 2 && (
+      {puntos.length >= 2 ? (
         <Lineas
-          puntos={puntos.map((m) => ({ ...m, valor: m[medida.clave], titulo: fechaConDia(m.fecha) }))}
+          puntos={puntos.map((m) => ({ ...m, valor: m[medida.clave], titulo: fechaConDia(m.fecha), nota: m.notas || undefined }))}
           series={[{ clave: 'valor', nombre: medida.nombre, clase: 'serie--peso' }]}
           etiquetaX={(p) => fechaCorta(p.fecha)}
           formato={(v) => kg(v)}
           descripcion={`${medida.nombre} en ${medida.unidad} por fecha.`}
         />
+      ) : (
+        <p className="tenue">Con una segunda anotación aparece acá la curva de {medida.nombre.toLowerCase()}.</p>
       )}
     </>
   );
@@ -157,42 +189,58 @@ export default function Cuerpo() {
       </header>
       <Estado datos={datos} error={error} reintentar={reintentar}>
         {datos && (
-          <>
-            <section className="tarjeta">
-              {conDatos.length > 1 && (
-                <div className="segmentado segmentado--chico segmentado--desplazable" role="group" aria-label="Medida">
-                  {conDatos.map((m) => (
-                    <button key={m.clave} type="button" aria-pressed={m.clave === elegida.clave} onClick={() => setMedida(m.clave)}>
-                      {m.nombre}
-                    </button>
-                  ))}
+          <div className="dos-columnas pantalla">
+            <div className="pila">
+              <ResumenMedidas medidas={conDatos} elegida={elegida} mediciones={datos} onElegir={setMedida} />
+              <section className="tarjeta">
+                <Medida medida={elegida} mediciones={datos} />
+              </section>
+            </div>
+            <div className="pila">
+              {datos.length > 0 ? (
+                <section className="tarjeta tarjeta--llena">
+                  <header className="tarjeta__cabecera">
+                    <h2 className="tarjeta__titulo">Anotaciones</h2>
+                    <span className="tenue">{datos.length}</span>
+                  </header>
+                  <ul className="renglones desplazable">
+                    {[...datos].reverse().map((m) => {
+                      const otras = MEDIDAS.filter((x) => x.clave !== 'peso_kg' && m[x.clave] !== null)
+                        .map((x) => `${x.nombre} ${kg(m[x.clave])} ${x.unidad}`)
+                        .join(' · ');
+                      return (
+                        <li key={m.id}>
+                          <button type="button" className="renglon renglon--boton renglon--tabla renglon--medicion" onClick={() => setHoja({ id: Date.now(), medicion: m })}>
+                            <span className="renglon__texto">
+                              <span className="renglon__titulo">{fechaConDia(m.fecha)}</span>
+                              <span className="renglon__detalle cifra renglon__detalle--compacto">
+                                {MEDIDAS.filter((x) => m[x.clave] !== null)
+                                  .map((x) => `${x.nombre} ${kg(m[x.clave])} ${x.unidad}`)
+                                  .join(' · ')}
+                              </span>
+                              {m.notas && <span className="renglon__detalle">{m.notas}</span>}
+                            </span>
+                            <span className="renglon__columna cifra">{otras || '—'}</span>
+                            <span className="renglon__columna renglon__columna--numero cifra">
+                              {m.peso_kg !== null ? `${kg(m.peso_kg)} kg` : '—'}
+                            </span>
+                            <Icono nombre="editar" tamano={18} className="tenue renglon__accion" />
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              ) : (
+                <div className="tarjeta vacio">
+                  <p>Registrá peso o medidas corporales para seguir la tendencia a lo largo de los bloques.</p>
+                  <button type="button" className="boton boton--principal" onClick={() => setHoja({ id: Date.now() })}>
+                    Cargar primera medición
+                  </button>
                 </div>
               )}
-              <Medida medida={elegida} mediciones={datos} />
-            </section>
-            {datos.length > 0 && (
-              <section className="tarjeta">
-                <h2 className="tarjeta__titulo">Anotaciones</h2>
-                <ul className="renglones">
-                  {[...datos].reverse().map((m) => (
-                    <li key={m.id}>
-                      <button type="button" className="renglon renglon--boton" onClick={() => setHoja({ id: Date.now(), medicion: m })}>
-                        <span className="renglon__texto">
-                          <span className="renglon__titulo">{fechaConDia(m.fecha)}</span>
-                          <span className="renglon__detalle cifra">
-                            {MEDIDAS.filter((x) => m[x.clave] !== null)
-                              .map((x) => `${x.nombre} ${kg(m[x.clave])} ${x.unidad}`)
-                              .join(' · ')}
-                          </span>
-                        </span>
-                        <Icono nombre="editar" tamano={18} className="tenue" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </>
+            </div>
+          </div>
         )}
       </Estado>
       <Hoja titulo={hoja?.medicion ? 'Editar medición' : 'Anotar medidas'} abierta={Boolean(hoja)} onCerrar={() => setHoja(null)}>

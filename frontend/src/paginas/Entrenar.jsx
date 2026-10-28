@@ -120,7 +120,16 @@ function Sesion({ datos, plan }) {
     setDescanso(null);
   };
 
-  const hechas = Object.values(estado.filas).flat().filter((f) => f.hecha).length;
+  const todasLasFilas = Object.values(estado.filas).flat();
+  const seriesHechas = todasLasFilas.filter((f) => f.hecha);
+  const hechas = seriesHechas.length;
+  const seriesTotales = todasLasFilas.length;
+  const ejerciciosCompletos = datos.ejercicios.filter((item) => {
+    const filas = estado.filas[item.ejercicio.id] ?? [];
+    return filas.length > 0 && filas.every((f) => f.hecha);
+  }).length;
+  const volumenHoy = seriesHechas.reduce((suma, f) => suma + (parsearNumero(f.peso) ?? 0) * (Number(f.reps) || 0), 0);
+  const porcentaje = seriesTotales > 0 ? Math.round((hechas / seriesTotales) * 100) : 0;
   const semana = SEMANAS[datos.tipo_semana];
 
   return (
@@ -130,58 +139,91 @@ function Sesion({ datos, plan }) {
           <h1 className="cabecera__titulo">{datos.dia_nombre}</h1>
           <p className="tenue">{plan?.nombre}</p>
         </div>
-        <span className={`pastilla pastilla--${datos.tipo_semana}`}>{semana.nombre}</span>
+        <div className="cabecera__acciones">
+          {plan && plan.dias.length > 1 && (
+            <nav className="otros-dias" aria-label="Cambiar de día">
+              {plan.dias.map((d) => (
+                <Link key={d.orden} to={`/entrenar/${d.orden}`} className="chip chip--chico" aria-current={d.orden === datos.dia_orden ? 'page' : undefined}>
+                  {d.nombre}
+                </Link>
+              ))}
+            </nav>
+          )}
+          <span className={`pastilla pastilla--${datos.tipo_semana}`}>{semana.nombre}</span>
+        </div>
       </header>
-      {plan && plan.dias.length > 1 && (
-        <nav className="otros-dias" aria-label="Cambiar de día">
-          {plan.dias.map((d) => (
-            <Link key={d.orden} to={`/entrenar/${d.orden}`} className="chip chip--chico" aria-current={d.orden === datos.dia_orden ? 'page' : undefined}>
-              {d.nombre}
-            </Link>
-          ))}
-        </nav>
-      )}
       {datos.tipo_semana !== 'progresion' && <p className="intro">{semana.detalle}</p>}
 
-      {datos.ejercicios.map((item) => {
-        const id = item.ejercicio.id;
-        return (
-          <TarjetaEjercicio
-            key={id}
-            item={item}
-            filas={estado.filas[id] ?? []}
-            onCambiar={(i, cambio) => cambiarFilas(id, (filas) => filas.map((f, j) => (j === i ? { ...f, ...cambio } : f)))}
-            onMarcar={(i) => marcar(item, i)}
-            onSumar={() => cambiarFilas(id, (filas) => [...filas, { peso: filas.at(-1)?.peso ?? '', reps: '', hecha: false }])}
-            onQuitar={() => cambiarFilas(id, (filas) => filas.slice(0, -1))}
-          />
-        );
-      })}
+      <div className="entrenar-tablero">
+        <div className="entrenar-ejercicios">
+          {datos.ejercicios.map((item) => {
+            const id = item.ejercicio.id;
+            return (
+              <TarjetaEjercicio
+                key={id}
+                item={item}
+                filas={estado.filas[id] ?? []}
+                onCambiar={(i, cambio) => cambiarFilas(id, (filas) => filas.map((f, j) => (j === i ? { ...f, ...cambio } : f)))}
+                onMarcar={(i) => marcar(item, i)}
+                onSumar={() => cambiarFilas(id, (filas) => [...filas, { peso: filas.at(-1)?.peso ?? '', reps: '', hecha: false }])}
+                onQuitar={() => cambiarFilas(id, (filas) => filas.slice(0, -1))}
+              />
+            );
+          })}
+        </div>
 
-      <section className="tarjeta">
-        <label className="campo">
-          <span>Notas del día</span>
-          <input value={estado.notas} onChange={(e) => setEstado((p) => ({ ...p, notas: e.target.value }))} maxLength={500} placeholder="Cómo te sentiste, molestias…" />
-        </label>
-        <button type="button" className="boton boton--principal boton--ancho" onClick={terminar} disabled={enviando}>
-          {enviando ? 'Guardando…' : `Terminar entrenamiento (${hechas} series)`}
-        </button>
-        {descartando ? (
-          <div className="confirmar">
-            <span>¿Descartar lo anotado?</span>
-            <button type="button" className="boton boton--chico boton--peligro" onClick={descartar}>
-              Sí, descartar
-            </button>
-            <button type="button" className="boton boton--chico" onClick={() => setDescartando(false)}>
-              No
-            </button>
+        <aside className="tarjeta entrenar-resumen lateral-fijo">
+          <div className="resumen-sesion">
+            <div className="resumen-sesion__encabezado">
+              <span className="rotulo">Avance de hoy</span>
+              <span className="cifra tenue">{porcentaje} %</span>
+            </div>
+            <div className="progreso-pista" aria-hidden="true">
+              <span style={{ width: `${porcentaje}%` }} />
+            </div>
+            <dl className="resumen-sesion__datos">
+              <div>
+                <dt>Series</dt>
+                <dd className="cifra">
+                  {hechas} / {seriesTotales}
+                </dd>
+              </div>
+              <div>
+                <dt>Ejercicios</dt>
+                <dd className="cifra">
+                  {ejerciciosCompletos} / {datos.ejercicios.length}
+                </dd>
+              </div>
+              <div>
+                <dt>Volumen</dt>
+                <dd className="cifra">{kg(volumenHoy)} kg</dd>
+              </div>
+            </dl>
           </div>
-        ) : (
-          <button type="button" className="enlace-boton enlace-boton--tenue" onClick={() => setDescartando(true)}>
-            Descartar y empezar de nuevo
+          <label className="campo">
+            <span>Notas del día</span>
+            <input value={estado.notas} onChange={(e) => setEstado((p) => ({ ...p, notas: e.target.value }))} maxLength={500} placeholder="Cómo te sentiste, molestias…" />
+          </label>
+          <button type="button" className="boton boton--principal boton--ancho" onClick={terminar} disabled={enviando}>
+            {enviando ? 'Guardando…' : `Terminar entrenamiento (${hechas} series)`}
           </button>
-        )}
-      </section>
+          {descartando ? (
+            <div className="confirmar">
+              <span>¿Descartar lo anotado?</span>
+              <button type="button" className="boton boton--chico boton--peligro" onClick={descartar}>
+                Sí, descartar
+              </button>
+              <button type="button" className="boton boton--chico" onClick={() => setDescartando(false)}>
+                No
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="enlace-boton enlace-boton--tenue" onClick={() => setDescartando(true)}>
+              Descartar y empezar de nuevo
+            </button>
+          )}
+        </aside>
+      </div>
 
       {descanso && (
         <Descanso
