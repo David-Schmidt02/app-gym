@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { GRUPOS, nombreGrupo, rangoReps } from '../lib/formato';
-import { moverEnGrilla } from '../lib/teclado';
+import { moverEnGrilla, punteroFino } from '../lib/teclado';
 import Desplegable from './Desplegable';
 import Icono from './Icono';
 import IconoMusculo from './IconoMusculo';
@@ -139,7 +139,7 @@ function PanelEjercicios({ etiqueta, ejercicios, valor, conBuscador, onElegir })
             }}
             placeholder="Filtrar ejercicio…"
             aria-label="Filtrar ejercicio"
-            autoFocus
+            autoFocus={punteroFino()}
           />
           {busqueda && (
             <button type="button" className="boton-icono buscador__limpiar" onClick={() => setBusqueda('')} aria-label="Limpiar filtro">

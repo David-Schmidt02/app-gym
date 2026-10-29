@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Estado from '../componentes/Estado';
+import Carrusel from '../componentes/Carrusel';
 import Hoja from '../componentes/Hoja';
 import Icono from '../componentes/Icono';
 import IconoMusculo from '../componentes/IconoMusculo';
@@ -445,19 +446,40 @@ function FormEjercicio({ ejercicio, grupoInicial = 'pecho', onListo }) {
           valor={datos.tipo}
           onCambio={(valor) => setDatos((d) => ({ ...d, tipo: valor }))}
         />
-        <label className="campo">
-          <span>Reps mínimas</span>
-          <input type="number" min={1} max={50} value={datos.reps_min} onChange={cambiar('reps_min')} required />
-        </label>
-        <label className="campo">
-          <span>Reps máximas</span>
-          <input type="number" min={1} max={50} value={datos.reps_max} onChange={cambiar('reps_max')} required />
-        </label>
+        <div className="campo">
+          <span aria-hidden="true">Reps mínimas</span>
+          <Carrusel
+            etiqueta="Reps mínimas"
+            valor={Number(datos.reps_min)}
+            onCambiar={(n) => setDatos((d) => ({ ...d, reps_min: String(n) }))}
+            min={1}
+            max={Number(datos.reps_max)}
+          />
+        </div>
+        <div className="campo">
+          <span aria-hidden="true">Reps máximas</span>
+          <Carrusel
+            etiqueta="Reps máximas"
+            valor={Number(datos.reps_max)}
+            onCambiar={(n) => setDatos((d) => ({ ...d, reps_max: String(n) }))}
+            min={Number(datos.reps_min)}
+            max={50}
+          />
+        </div>
       </div>
-      <label className="campo">
-        <span>Cuántos kg subir al completar el rango</span>
-        <input inputMode="decimal" value={datos.incremento} onChange={cambiar('incremento')} required />
-      </label>
+      <div className="campo">
+        <span aria-hidden="true">Cuántos kg subir al completar el rango</span>
+        <Carrusel
+          etiqueta="Cuántos kg subir al completar el rango"
+          valor={parsearNumero(datos.incremento)}
+          onCambiar={(n) => setDatos((d) => ({ ...d, incremento: kg(n) }))}
+          paso={0.5}
+          min={0.5}
+          max={20}
+          formatear={kg}
+          unidad="kg"
+        />
+      </div>
       <label className="campo">
         <span>Notas (técnica, máquina, agarre…)</span>
         <input value={datos.notas} onChange={cambiar('notas')} maxLength={300} />

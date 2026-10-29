@@ -1,6 +1,6 @@
 # Gym · desarrollo (Android)
 
-> **Versión** 1.2.1 · **Última actualización** 2026-10-28
+> **Versión** 1.3.0 · **Última actualización** 2026-10-28
 
 La presentación y las capturas están en el [README](../README.md). Esta rama (`mobile-nativo`) es la app Android local-first; la versión web con backend está en [`main`](https://github.com/David-Schmidt02/app-gym/blob/main/docs/DESARROLLO.md).
 
@@ -73,6 +73,7 @@ docs/capturas/      capturas del README
 
 | Versión | Fecha | Cambios |
 |---|---|---|
+| 1.3.0 | 2026-10-28 | Carrusel numérico sin teclado para pesos y reps (Entrenar, corrección de entrenamientos y rango e incremento de cada ejercicio): se desliza en horizontal o se tocan los valores vecinos. El buscador de ejercicios ya no abre el teclado solo en pantallas táctiles, y el editor de rutinas no se ensancha más que la pantalla al abrir «Agregar ejercicio». |
 | 1.2.1 | 2026-10-28 | Repositorio público con licencia MIT: README de presentación con capturas, este documento de desarrollo, la rama `mobile-nativo` protegida (solo PR con squash y el APK compilando en verde) y sin el CI heredado del backend, que ya no existe en esta rama. |
 | 1.2.0 | 2026-10-28 | Versión móvil nativa para Android (Capacitor): 100 % Local-First en IndexedDB sin backend ni servidor, funcionamiento offline, fuentes embebidas, respaldo y restauración en JSON y compilación automática de APK en GitHub Actions. |
 | 1.1.0 | 2026-10-28 | Diseño horizontal de dos columnas en escritorio, selectores desplegables propios, iconografía anatómica por grupo muscular y agenda semanal fija con descanso configurable y postergación inteligente en cascada. |

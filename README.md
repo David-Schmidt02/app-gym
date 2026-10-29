@@ -1,6 +1,6 @@
 # Gym
 
-> **Versión** 1.2.1 · **Última actualización** 2026-10-28 · [Desarrollo, APK e historial de versiones](docs/DESARROLLO.md)
+> **Versión** 1.3.0 · **Última actualización** 2026-10-28 · [Desarrollo, APK e historial de versiones](docs/DESARROLLO.md)
 
 Libreta de gimnasio que te dice qué toca hoy, con cuánto peso arrancar cada ejercicio y cuándo descargar. La hice para volver a entrenar después de mucho tiempo con un plan que crece conmigo: dos días por semana al principio, después tres y en unos meses cuatro.
 
@@ -28,7 +28,7 @@ Esta rama es la **app Android**: todo queda en el teléfono, anda sin señal en 
 ## Qué hace
 
 - **Hoy**: en qué semana del ciclo estás (adaptación, progresión o descarga), la semana con lo hecho y lo programado, y el entrenamiento que toca, listo para empezar. Si un día no podés, «Pasar a mañana» corre lo que sigue respetando los días de descanso.
-- **Entrenar**: cada ejercicio muestra lo que hiciste la vez pasada y la sugerencia de hoy con su motivo («Mismo peso: buscá sumar una rep»). Las series ya vienen con el peso; anotás las reps, marcás la serie y arranca el descanso. Si cerrás la app a mitad de camino, lo anotado sigue ahí.
+- **Entrenar**: cada ejercicio muestra lo que hiciste la vez pasada y la sugerencia de hoy con su motivo («Mismo peso: buscá sumar una rep»). Las series ya vienen con el peso; pesos y reps se ajustan deslizando el dedo sobre un carrusel, sin abrir el teclado. Marcás la serie y arranca el descanso. Si cerrás la app a mitad de camino, lo anotado sigue ahí.
 - **Progreso**: por ejercicio, el récord de peso, el 1RM estimado y la curva de cada sesión, con las descargas marcadas. Desde ahí se corrige o se borra cualquier entrenamiento.
 - **Cuerpo**: peso, cintura, cadera, pecho, brazo y muslo, con la diferencia contra la anotación anterior y contra la primera, y la curva.
 - **Rutina**: tres rutinas de arranque (2, 3 y 4 días) que se editan a gusto, con el día de la semana de cada sesión, y un banco de ejercicios por grupo muscular con su rango de reps y cuántos kilos subir.
