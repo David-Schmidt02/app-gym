@@ -1,4 +1,11 @@
+import groovy.json.JsonSlurper
+
 apply plugin: 'com.android.application'
+
+// La versión sale de package.json; versionCode crece con ella para que Android acepte cada APK como actualización
+def versionApp = new JsonSlurper().parse(file('../../package.json')).version
+def (mayor, menor, parche) = versionApp.tokenize('.')*.toInteger()
+def almacenFirma = System.getenv('ANDROID_KEYSTORE_PATH')
 
 android {
     namespace = "ar.com.davidschmidt.gym"
@@ -7,13 +14,24 @@ android {
         applicationId "ar.com.davidschmidt.gym"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.2.0"
+        versionCode mayor * 10000 + menor * 100 + parche
+        versionName versionApp
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        // Clave fija del CI: sin ella cada APK sale con otra firma y no se instala encima del anterior
+        if (almacenFirma) {
+            release {
+                storeFile file(almacenFirma)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+            }
         }
     }
     buildTypes {
@@ -23,7 +41,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig almacenFirma ? signingConfigs.release : signingConfigs.debug
         }
     }
 }

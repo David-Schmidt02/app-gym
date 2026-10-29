@@ -1,6 +1,6 @@
 # Gym
 
-> **Versión** 1.3.0 · **Última actualización** 2026-10-28 · [Desarrollo, APK e historial de versiones](docs/DESARROLLO.md)
+> **Versión** 1.3.1 · **Última actualización** 2026-10-29 · [Desarrollo, APK e historial de versiones](docs/DESARROLLO.md)
 
 Libreta de gimnasio que te dice qué toca hoy, con cuánto peso arrancar cada ejercicio y cuándo descargar. La hice para volver a entrenar después de mucho tiempo con un plan que crece conmigo: dos días por semana al principio, después tres y en unos meses cuatro.
 

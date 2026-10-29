@@ -1,6 +1,6 @@
 # Gym · desarrollo (Android)
 
-> **Versión** 1.3.0 · **Última actualización** 2026-10-28
+> **Versión** 1.3.1 · **Última actualización** 2026-10-29
 
 La presentación y las capturas están en el [README](../README.md). Esta rama (`mobile-nativo`) es la app Android local-first; la versión web con backend está en [`main`](https://github.com/David-Schmidt02/app-gym/blob/main/docs/DESARROLLO.md).
 
@@ -51,8 +51,10 @@ Cada push y cada PR a `mobile-nativo` dispara `.github/workflows/apk.yml`, que:
 
 1. Instala dependencias y corre la suite de pruebas unitarias y lint.
 2. Compila el frontend estático y sincroniza Capacitor.
-3. Compila el APK con Gradle usando Java 21 y Android SDK, firmado con la clave de debug.
+3. Compila el APK con Gradle usando Java 21 y Android SDK, firmado con la clave fija del proyecto, y verifica la huella de la firma.
 4. Publica **`app-gym.apk`** como artefacto en la pestaña **Actions**, para bajarlo directo al teléfono.
+
+**Firma.** Android solo instala una versión nueva encima de la anterior si las dos tienen la misma firma; si no, hay que desinstalar y se borran los datos. Por eso el CI firma siempre con la misma clave, guardada en los secrets del repo (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`) y fuera de git, y falla si falta o si el APK sale con otra huella (SHA-256 `6b:82:0f:6c:…:9c:37`). `versionName` y `versionCode` salen de `package.json`, así cada versión cuenta como actualización. Un build local sin `ANDROID_KEYSTORE_PATH` se firma con la clave de debug de la máquina y no se instala encima del APK del CI.
 
 La rama está protegida: no se puede borrar ni forzar, y los cambios entran por PR con squash y solo si `Compilar app-gym.apk` pasa en verde.
 
@@ -73,6 +75,7 @@ docs/capturas/      capturas del README
 
 | Versión | Fecha | Cambios |
 |---|---|---|
+| 1.3.1 | 2026-10-29 | El APK se firma siempre con la misma clave (secrets del repo) y el CI verifica la huella, así cada versión se instala como actualización sin desinstalar ni perder los datos. `versionName` y `versionCode` salen de `package.json`. Al pasar de un APK anterior a este hay que desinstalar una única vez: exportar el respaldo antes y restaurarlo después. |
 | 1.3.0 | 2026-10-28 | Carrusel numérico sin teclado para pesos y reps (Entrenar, corrección de entrenamientos y rango e incremento de cada ejercicio): se desliza en horizontal o se tocan los valores vecinos. El buscador de ejercicios ya no abre el teclado solo en pantallas táctiles, y el editor de rutinas no se ensancha más que la pantalla al abrir «Agregar ejercicio». |
 | 1.2.1 | 2026-10-28 | Repositorio público con licencia MIT: README de presentación con capturas, este documento de desarrollo, la rama `mobile-nativo` protegida (solo PR con squash y el APK compilando en verde) y sin el CI heredado del backend, que ya no existe en esta rama. |
 | 1.2.0 | 2026-10-28 | Versión móvil nativa para Android (Capacitor): 100 % Local-First en IndexedDB sin backend ni servidor, funcionamiento offline, fuentes embebidas, respaldo y restauración en JSON y compilación automática de APK en GitHub Actions. |
