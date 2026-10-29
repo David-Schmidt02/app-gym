@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import Carrusel from '../componentes/Carrusel';
 import Estado from '../componentes/Estado';
 import Icono from '../componentes/Icono';
 import { useApp } from '../estado/contextos';
@@ -71,17 +72,30 @@ function Editor({ sesion, nombres, onListo }) {
                   <span className="serie-fila__numero" aria-hidden="true">
                     {n + 1}
                   </span>
-                  <label className="serie-fila__campo">
-                    <span className="visualmente-oculto">Peso en kg</span>
-                    <input inputMode="decimal" value={f.peso} onChange={(e) => cambiar(f.indice, { peso: e.target.value })} disabled={f.quitada} />
-                    <span className="serie-fila__unidad">kg</span>
-                  </label>
-                  <span className="serie-fila__por">×</span>
-                  <label className="serie-fila__campo">
-                    <span className="visualmente-oculto">Repeticiones</span>
-                    <input inputMode="numeric" value={f.repsTexto} onChange={(e) => cambiar(f.indice, { repsTexto: e.target.value.replace(/\D/g, '') })} disabled={f.quitada} />
-                    <span className="serie-fila__unidad">reps</span>
-                  </label>
+                  <Carrusel
+                    className="serie-fila__campo"
+                    etiqueta={`Serie ${n + 1}: peso`}
+                    valor={parsearNumero(f.peso)}
+                    onCambiar={(v) => cambiar(f.indice, { peso: kg(v) })}
+                    paso={0.5}
+                    max={500}
+                    formatear={kg}
+                    unidad="kg"
+                    disabled={f.quitada}
+                  />
+                  <span className="serie-fila__por" aria-hidden="true">
+                    ×
+                  </span>
+                  <Carrusel
+                    className="serie-fila__campo"
+                    etiqueta={`Serie ${n + 1}: repeticiones`}
+                    valor={f.repsTexto === '' ? null : Number(f.repsTexto)}
+                    onCambiar={(v) => cambiar(f.indice, { repsTexto: String(v) })}
+                    min={1}
+                    max={50}
+                    unidad="reps"
+                    disabled={f.quitada}
+                  />
                   <button
                     type="button"
                     className="boton-icono"

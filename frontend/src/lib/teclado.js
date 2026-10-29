@@ -14,3 +14,8 @@ export function esAtajo(e) {
   if (destino.closest?.('input, textarea, select, [contenteditable="true"], dialog[open]')) return false;
   return !document.querySelector('dialog[open]');
 }
+
+/** Con mouse o trackpad el foco puede ir a un campo de texto al abrir un panel; en pantallas táctiles eso abre el teclado. */
+export function punteroFino() {
+  return window.matchMedia('(pointer: fine)').matches;
+}

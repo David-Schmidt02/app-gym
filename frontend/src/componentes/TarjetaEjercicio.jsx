@@ -1,4 +1,5 @@
-import { fechaConDia, kg, nombreGrupo, rangoReps, resumirSeries } from '../lib/formato';
+import { fechaConDia, kg, nombreGrupo, parsearNumero, rangoReps, resumirSeries } from '../lib/formato';
+import Carrusel from './Carrusel';
 import Icono from './Icono';
 
 const ACCIONES = {
@@ -28,11 +29,17 @@ function Sugerencia({ sugerencia }) {
 
 /**
  * Un ejercicio del entrenamiento: lo de la vez pasada, la sugerencia y una fila por serie.
- * `filas`: [{ peso, reps, hecha }] con peso y reps como texto (lo que se tipea).
+ * `filas`: [{ peso, reps, hecha }] con peso y reps como texto, igual que en el borrador guardado.
  */
 export default function TarjetaEjercicio({ item, filas, onCambiar, onMarcar, onSumar, onQuitar }) {
   const { ejercicio, ultima_vez: ultima, sugerencia } = item;
   const hechas = filas.filter((f) => f.hecha).length;
+  const pesoInicial = sugerencia.peso_kg ?? (ejercicio.tipo === 'compuesto' ? 20 : 5);
+  // Con el mismo peso, la meta es una rep más que la vez pasada en esa serie
+  const repsIniciales = (i) => {
+    const antes = ultima?.series[i]?.reps;
+    return sugerencia.accion === 'mantener' && antes ? Math.min(antes + 1, sugerencia.reps_max) : sugerencia.reps_min;
+  };
 
   return (
     <section className={`tarjeta ejercicio${hechas === filas.length && filas.length ? ' es-completo' : ''}`}>
@@ -59,34 +66,34 @@ export default function TarjetaEjercicio({ item, filas, onCambiar, onMarcar, onS
             <span className="serie-fila__numero" aria-hidden="true">
               {i + 1}
             </span>
-            <label className="serie-fila__campo">
-              <span className="visualmente-oculto">Serie {i + 1}: peso en kg</span>
-              <input
-                inputMode="decimal"
-                value={fila.peso}
-                onChange={(e) => onCambiar(i, { peso: e.target.value })}
-                disabled={fila.hecha}
-              />
-              <span className="serie-fila__unidad" aria-hidden="true">
-                kg
-              </span>
-            </label>
+            <Carrusel
+              className="serie-fila__campo"
+              etiqueta={`Serie ${i + 1}: peso`}
+              valor={parsearNumero(fila.peso)}
+              onCambiar={(n) => onCambiar(i, { peso: kg(n) })}
+              paso={0.5}
+              max={500}
+              inicial={pesoInicial}
+              formatear={kg}
+              unidad="kg"
+              vacio="Peso"
+              disabled={fila.hecha}
+            />
             <span className="serie-fila__por" aria-hidden="true">
               ×
             </span>
-            <label className="serie-fila__campo">
-              <span className="visualmente-oculto">Serie {i + 1}: repeticiones</span>
-              <input
-                inputMode="numeric"
-                value={fila.reps}
-                onChange={(e) => onCambiar(i, { reps: e.target.value.replace(/\D/g, '') })}
-                placeholder={rangoReps(sugerencia.reps_min, sugerencia.reps_max)}
-                disabled={fila.hecha}
-              />
-              <span className="serie-fila__unidad" aria-hidden="true">
-                reps
-              </span>
-            </label>
+            <Carrusel
+              className="serie-fila__campo"
+              etiqueta={`Serie ${i + 1}: repeticiones`}
+              valor={fila.reps === '' ? null : Number(fila.reps)}
+              onCambiar={(n) => onCambiar(i, { reps: String(n) })}
+              min={1}
+              max={50}
+              inicial={repsIniciales(i)}
+              unidad="reps"
+              vacio={rangoReps(sugerencia.reps_min, sugerencia.reps_max)}
+              disabled={fila.hecha}
+            />
             <button
               type="button"
               className="serie-fila__marca"
