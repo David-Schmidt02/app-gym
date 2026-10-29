@@ -602,6 +602,27 @@ input[type='checkbox'] {
   white-space: nowrap;
 }
 
+.segmentado--tema {
+  margin-top: var(--espacio-1);
+}
+
+.segmentado--tema button {
+  min-height: 44px;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+@media (max-width: 480px) {
+  .segmentado--tema button {
+    gap: 0;
+    padding: 0 4px;
+  }
+
+  .segmentado--tema .segmentado__etiqueta {
+    display: none;
+  }
+}
+
 .segmentado--filtro,
 .segmentado--pestanas {
   background: var(--hoja);

@@ -210,12 +210,22 @@ export default function Ajustes() {
         <div className="pila">
           <Ciclo />
           <section className="tarjeta solo-celular">
-            <h2 className="tarjeta__titulo">Tema</h2>
-            <div className="segmentado" role="group" aria-label="Tema">
+            <header className="tarjeta__cabecera">
+              <h2 className="tarjeta__titulo">Tema</h2>
+              <span className="tenue">{TEMAS.find((t) => t.valor === tema)?.nombre}</span>
+            </header>
+            <div className="segmentado segmentado--tema" role="group" aria-label="Tema">
               {TEMAS.map((t) => (
-                <button key={t.valor} type="button" aria-pressed={tema === t.valor} onClick={() => setTema(t.valor)}>
-                  <Icono nombre={t.icono} tamano={18} />
-                  {t.nombre}
+                <button
+                  key={t.valor}
+                  type="button"
+                  aria-pressed={tema === t.valor}
+                  onClick={() => setTema(t.valor)}
+                  aria-label={`Tema ${t.nombre}`}
+                  title={t.nombre}
+                >
+                  <Icono nombre={t.icono} tamano={20} />
+                  <span className="segmentado__etiqueta">{t.nombre}</span>
                 </button>
               ))}
             </div>
