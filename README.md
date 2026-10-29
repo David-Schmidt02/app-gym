@@ -1,67 +1,92 @@
-# Gym (Mobile Nativo)
+# Gym
 
-> **Versión** 1.2.0 · **Última actualización** 2026-10-28
+> **Versión** 1.2.1 · **Última actualización** 2026-10-28 · [Desarrollo, APK e historial de versiones](docs/DESARROLLO.md)
 
-Libreta de gimnasio personal nativa para Android: 100 % autónoma (*Local-First*), sin servidor ni costo de mantenimiento, con funcionamiento offline en el gimnasio, cálculo automático de carga progresiva, semanas de descarga, agenda semanal inteligente y respaldo de datos en JSON.
+Libreta de gimnasio que te dice qué toca hoy, con cuánto peso arrancar cada ejercicio y cuándo descargar. La hice para volver a entrenar después de mucho tiempo con un plan que crece conmigo: dos días por semana al principio, después tres y en unos meses cuatro.
 
-| Versión | Fecha | Cambios |
-|---|---|---|
-| 1.2.0 | 2026-10-28 | Versión móvil nativa para Android (Capacitor): 100 % Local-First en IndexedDB sin backend ni servidor, funcionamiento offline, fuentes embebidas, respaldo y restauración en JSON y compilación automática de APK en GitHub Actions. |
-| 1.1.0 | 2026-10-28 | Diseño horizontal de dos columnas en escritorio, selectores desplegables propios, iconografía anatómica por grupo muscular y agenda semanal fija con descanso configurable y postergación inteligente en cascada. |
-| 1.0.0 | 2026-10-26 | Primera versión: banco de ejercicios por grupo muscular, rutinas de 2, 3 y 4 días, entrenamiento con «la vez pasada» y sugerencia de peso (doble progresión), ciclo de adaptación + bloques de 4 semanas de progresión y 1 de descarga, descanso entre series, historial editable, curva de progreso por ejercicio, y peso corporal y medidas. |
+Esta rama es la **app Android**: todo queda en el teléfono, anda sin señal en el gimnasio y no necesita servidor. La versión web, con backend propio, está en [`main`](https://github.com/David-Schmidt02/app-gym).
+
+[![APK](https://github.com/David-Schmidt02/app-gym/actions/workflows/apk.yml/badge.svg?branch=mobile-nativo)](https://github.com/David-Schmidt02/app-gym/actions/workflows/apk.yml)
+![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
+![Capacitor](https://img.shields.io/badge/Capacitor-8-119EFF?logo=capacitor&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/celular-oscuro.webp">
+  <img src="docs/capturas/celular-claro.webp" alt="Hoy con la semana y el entrenamiento que toca, Entrenar con la sugerencia de peso, Progreso de la sentadilla y Cuerpo con el peso y las medidas, en el celular" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/escritorio-hoy-oscuro.webp">
+  <img src="docs/capturas/escritorio-hoy-claro.webp" alt="Hoy en pantalla grande: la semana con lo hecho y lo programado, el Día B que toca, en qué semana del ciclo estás y los últimos entrenamientos" width="100%">
+</picture>
+
+<sub>Las capturas usan datos inventados: ocho semanas de la rutina de 2 días. Siguen el tema claro u oscuro de GitHub, igual que la app sigue el del dispositivo.</sub>
 
 ## Qué hace
 
-- **Hoy**: la semana del ciclo (adaptación, progresión 1 a 4 o descarga), el calendario semanal con la rutina asignada por día (permite postergar a mañana o mover días con reprogramación en cascada respetando los descansos), el entrenamiento que toca hoy (o aviso de día de descanso) con el botón Empezar, y los últimos entrenamientos.
-- **Entrenar** (botón del centro): cada ejercicio muestra lo que hiciste la vez pasada y la sugerencia de hoy con su motivo. Las series ya vienen con el peso sugerido; anotás las reps y marcás la serie, y arranca el descanso (2 min en compuestos, 1:15 en aislados, +15 s a mano). Lo anotado queda guardado localmente en el teléfono, un borrador por día de la rutina, hasta tocar «Terminar».
-- **Progreso**: por ejercicio, el récord de peso, el 1RM estimado (Epley) y la curva de peso de trabajo y 1RM por sesión (las descargas, huecas). El historial completo se corrige o se borra desde ahí.
-- **Cuerpo**: peso, cintura, cadera, pecho, brazo y muslo. Cada anotación lleva lo que se midió ese día; muestra el último valor, la diferencia con el anterior y con el primero, y la curva.
-- **Rutina**: las rutinas (una activa) con su editor de días, día de la semana asignado, descanso mínimo entre sesiones, ejercicios y series; y el banco de ejercicios (hasta unos 5 por grupo) con su rango de reps y cuántos kg subir.
-- **Ajustes**: ciclo de entrenamiento, tema visual claro/oscuro, tu nombre de perfil y **Respaldo de datos** (exportar e importar archivo `.json` con hoja de compartir nativa de Android).
+- **Hoy**: en qué semana del ciclo estás (adaptación, progresión o descarga), la semana con lo hecho y lo programado, y el entrenamiento que toca, listo para empezar. Si un día no podés, «Pasar a mañana» corre lo que sigue respetando los días de descanso.
+- **Entrenar**: cada ejercicio muestra lo que hiciste la vez pasada y la sugerencia de hoy con su motivo («Mismo peso: buscá sumar una rep»). Las series ya vienen con el peso; anotás las reps, marcás la serie y arranca el descanso. Si cerrás la app a mitad de camino, lo anotado sigue ahí.
+- **Progreso**: por ejercicio, el récord de peso, el 1RM estimado y la curva de cada sesión, con las descargas marcadas. Desde ahí se corrige o se borra cualquier entrenamiento.
+- **Cuerpo**: peso, cintura, cadera, pecho, brazo y muslo, con la diferencia contra la anotación anterior y contra la primera, y la curva.
+- **Rutina**: tres rutinas de arranque (2, 3 y 4 días) que se editan a gusto, con el día de la semana de cada sesión, y un banco de ejercicios por grupo muscular con su rango de reps y cuántos kilos subir.
+- **Ajustes**: semana del ciclo (para retomar, adelantar o repetir una descarga), tema claro u oscuro y copia de seguridad en un archivo `.json` que se comparte con la hoja nativa de Android.
 
-## La lógica de entrenamiento
+<details>
+<summary><strong>Más pantallas</strong></summary>
 
-**Doble progresión** (`frontend/src/local/progresion.js`). Cada ejercicio tiene un rango de reps (6–10 en compuestos, 10–15 en aislados) y un incremento:
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/escritorio-entrenar-oscuro.webp">
+  <img src="docs/capturas/escritorio-entrenar-claro.webp" alt="Entrenar: cada ejercicio con la vez pasada, la sugerencia de peso y sus series, y el avance del día al costado" width="100%">
+</picture>
 
-| Situación (última sesión fuera de descargas, con su peso más alto) | Sugerencia |
-|---|---|
-| Sin registros | Elegir un peso para llegar al tope dejando 2–3 reps en reserva (3–4 en adaptación) |
-| Llegaste al tope del rango en todas las series | Subir el incremento (2,5 kg torso, 5 kg pierna, 1–2 kg mancuernas) y volver al piso del rango |
-| No llegaste | Mismo peso, sumar una rep |
-| Las dos últimas sesiones con el mismo peso sumaron menos reps que la anterior | Bajar 10 % y volver a construir |
-| Semana de descarga | La mitad de las series y 15 % menos de peso |
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/escritorio-progreso-oscuro.webp">
+  <img src="docs/capturas/escritorio-progreso-claro.webp" alt="Progreso: el banco de ejercicios por grupo muscular y, para la sentadilla, el récord, el 1RM estimado y la curva por sesión" width="100%">
+</picture>
 
-Los pesos sugeridos se redondean hacia abajo al medio kilo.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/escritorio-cuerpo-oscuro.webp">
+  <img src="docs/capturas/escritorio-cuerpo-claro.webp" alt="Cuerpo: el último peso y las medidas con su diferencia, la curva del peso y las anotaciones" width="100%">
+</picture>
 
-**Ciclo** (`frontend/src/local/ciclo.js`). Semana 0 de adaptación y después bloques de 5 semanas: 4 de progresión y la 5.ª de descarga. Cada lunes avanza una semana. Cada entrenamiento guarda el tipo de semana de su fecha; las descargas no cuentan para la progresión.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/capturas/escritorio-rutina-oscuro.webp">
+  <img src="docs/capturas/escritorio-rutina-claro.webp" alt="Rutina: la Fase 1 de 2 días activa y la Fase 2 de 3 días, con el día de la semana y las series de cada ejercicio" width="100%">
+</picture>
 
-**Rutinas de arranque** (`frontend/src/local/semillas.js`, se cargan automáticamente al primer inicio): Fase 1 de 2 días (cuerpo completo A/B, activa), Fase 2 de 3 días (A/B/C) y Fase 3 de 4 días (Torso/Pierna). El progreso es por ejercicio, así que al cambiar de rutina cada uno sigue desde donde quedó.
+</details>
+
+## Cómo decide el peso
+
+- **Doble progresión.** Cada ejercicio tiene un rango de reps (6–10 en los compuestos, 10–15 en los aislados). Mientras no llegues al tope en todas las series, mismo peso y una rep más; cuando llegás, sube el incremento del ejercicio (2,5 kg en torso, 5 kg en pierna) y volvés al piso del rango. Si dos sesiones seguidas con el mismo peso salen peor, baja un 10 % para volver a construir.
+- **Ciclo con descarga.** Una semana de adaptación y después bloques de cinco: cuatro de progresión y una de descarga, con la mitad de las series y 15 % menos de peso. Las descargas no cuentan para la progresión.
+- **Por ejercicio, no por rutina.** Al pasar de 2 a 3 o 4 días, cada ejercicio sigue desde donde quedó.
+
+## Decisiones técnicas
+
+- **Local-first.** Los datos viven en IndexedDB, en el teléfono: sin cuentas, sin servidor y sin costo de mantenimiento, y anda igual sin señal. La copia de seguridad es un `.json` para exportar e importar.
+- **Las mismas pantallas que la versión web.** Un router local (`frontend/src/local/router.js`) responde con la misma forma que la API REST de `main`, así la interfaz de React es la misma en las dos versiones y solo cambia de dónde salen los datos.
+- **La lógica, con tests.** Progresión, ciclo y agenda están portados a JavaScript y probados con Vitest sobre un IndexedDB en memoria.
+- **APK en cada cambio.** GitHub Actions corre los tests y el lint, compila el frontend, lo empaqueta con Capacitor y deja el `app-gym.apk` listo para bajar.
+- **Interfaz sin librería de componentes:** CSS propio con tokens para el tema claro y el oscuro, gráficos en SVG a mano, íconos por grupo muscular y tipografías embebidas para que nada dependa de la red.
+
+## Dos versiones
+
+| | [`main`](https://github.com/David-Schmidt02/app-gym) | `mobile-nativo` (esta rama) |
+|---|---|---|
+| Dónde corre | Navegador, instalable como app | App Android (APK) |
+| Datos | SQLite en el servidor, con cuenta | IndexedDB en el teléfono, sin cuenta |
+| Stack | FastAPI + React en un contenedor | React + Capacitor, sin backend |
+
+Las dos ramas están protegidas y tienen su propio CI.
 
 ## Stack
 
-| Parte | Tecnología |
-|---|---|
-| App Móvil | Android nativo con Capacitor 8 |
-| Frontend | React 19 + Vite, CSS propio, tipografías locales embebidas (`@fontsource`) |
-| Persistencia | IndexedDB nativo del dispositivo (0 servidores, 100 % offline) |
-| Testing | Vitest + fake-indexeddb para la suite del motor local |
-| CI / Build | GitHub Actions compila `app-gym.apk` firmado automáticamente en cada push |
+React 19, Vite y Capacitor 8; IndexedDB para los datos; Vitest con fake-indexeddb para los tests; GitHub Actions para compilar el APK. Cómo levantarla en local y compilarla está en [docs/DESARROLLO.md](docs/DESARROLLO.md).
 
-## Desarrollo local
+## Licencia
 
-```bash
-cd frontend
-npm install
-npm run dev      # Servidor de desarrollo en http://localhost:5173
-npm test         # Pruebas unitarias del motor local en Vitest
-npm run lint     # Validación de código con ESLint
-npm run cap:sync # Compila la web y sincroniza los assets con Android
-```
-
-## Compilación del APK
-
-Cada push a la rama `mobile-nativo` dispara el workflow `.github/workflows/apk.yml`, el cual:
-1. Instala dependencias y corre la suite de pruebas unitarias y lint.
-2. Compila el frontend estático y sincroniza Capacitor.
-3. Compila el APK nativo con Gradle usando Java 21 y Android SDK.
-4. Publica el archivo instalable **`app-gym.apk`** en la pestaña **Actions** del repositorio para descargar directo al teléfono.
+[MIT](LICENSE).
